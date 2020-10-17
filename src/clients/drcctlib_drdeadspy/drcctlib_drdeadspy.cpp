@@ -248,8 +248,6 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                                      false, 3, OPND_CREATE_CCT_INT(slot), reg, true);
             }
         }
-
-        DRCCTLIB_PRINTF("******InstrumentInsCallback6x");
     }
 
     if (is_mem) {
@@ -260,6 +258,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                              OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
                              is_mem_write);
     }
+
+    DRCCTLIB_PRINTF("******InstrumentInsCallback7");
 }
 
 static void
