@@ -203,8 +203,11 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     bool is_mem = false;
     for (int i = 0; i < instr_num_srcs(instr); i++) {
         DRCCTLIB_PRINTF("******InstrumentInsCallback1");
+        DRCCTLIB_PRINTF("******i=%d", i);
         opnd_t op = instr_get_src(instr, i);
+        DRCCTLIB_PRINTF("******op=%d", op);
         if (opnd_is_memory_reference(op)) {
+            DRCCTLIB_PRINTF("******opnd_is_memory_reference");
             num++;
             InstrumentMem(drcontext, bb, instr, op);
             is_mem = true;
@@ -225,10 +228,14 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     }
     for (int i = 0; i < instr_num_dsts(instr); i++) {
         DRCCTLIB_PRINTF("******InstrumentInsCallback3");
+        DRCCTLIB_PRINTF("******i=%d", i);
         opnd_t op = instr_get_dst(instr, i);
+        DRCCTLIB_PRINTF("******op=%d", op);
         if (opnd_is_memory_reference(op)) {
+            DRCCTLIB_PRINTF("******opnd_is_memory_reference");
             num++;
             InstrumentMem(drcontext, bb, instr, op);
+            is_mem = true;
 
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
@@ -263,7 +270,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
                              OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
                              is_mem_write);
-                DRCCTLIB_PRINTF("******dr_insert_clean_call4");
+        DRCCTLIB_PRINTF("******dr_insert_clean_call4");
     }
 
     DRCCTLIB_PRINTF("******InstrumentInsCallback7");
@@ -356,13 +363,13 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, INSTRACE_TLS_COUNT, 0)) {
         DRCCTLIB_EXIT_PROCESS("ERROR: drcctlib_drdeadspy dr_raw_tls_calloc fail");
     }
-        DRCCTLIB_PRINTF("before");
+    DRCCTLIB_PRINTF("before");
     drcctlib_init(DRCCTLIB_FILTER_MEM_ACCESS_INSTR, INVALID_FILE, InstrumentInsCallback,
                   false);
-        DRCCTLIB_PRINTF("after");
+    DRCCTLIB_PRINTF("after");
     dr_register_exit_event(ClientExit);
 
-        DRCCTLIB_PRINTF("end");
+    DRCCTLIB_PRINTF("end");
 }
 
 #ifdef __cplusplus
