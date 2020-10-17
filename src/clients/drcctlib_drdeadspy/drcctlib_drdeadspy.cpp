@@ -112,15 +112,15 @@ InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
 void
 InsertRegCleancall(int32_t slot, reg_id_t reg_id, bool is_write)
 {
-    void *drcontext = dr_get_current_drcontext();
-    per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
-    context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
-    for (int i = 0; i < num; i++) {
-        if (pt->cur_buf_list[i].addr != 0) {
-            DoWhatClientWantTodo(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i]);
-        }
-    }
-    BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
+    // void *drcontext = dr_get_current_drcontext();
+    // per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
+    // context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
+    // for (int i = 0; i < num; i++) {
+    //     if (pt->cur_buf_list[i].addr != 0) {
+    //         DoWhatClientWantTodo(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i]);
+    //     }
+    // }
+    // BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
 }
 
 // insert
