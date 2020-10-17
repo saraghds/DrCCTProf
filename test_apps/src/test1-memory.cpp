@@ -1,4 +1,4 @@
-int N = 100;
+int N = 10;
 
 int main() {
 	int A[N];
