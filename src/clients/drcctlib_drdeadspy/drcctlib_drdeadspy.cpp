@@ -279,7 +279,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
 static void
 ClientThreadStart(void *drcontext)
 {
-    DRCCTLIB_PRINTF("******ClientThreadStart");
+    // DRCCTLIB_PRINTF("******ClientThreadStart");
     per_thread_t *pt = (per_thread_t *)dr_thread_alloc(drcontext, sizeof(per_thread_t));
     if (pt == NULL) {
         DRCCTLIB_EXIT_PROCESS("pt == NULL");
@@ -303,7 +303,7 @@ ClientThreadEnd(void *drcontext)
 static void
 ClientInit(int argc, const char *argv[])
 {
-    DRCCTLIB_PRINTF("******ClientInit");
+    // DRCCTLIB_PRINTF("******ClientInit");
 }
 
 static void
@@ -363,13 +363,10 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, INSTRACE_TLS_COUNT, 0)) {
         DRCCTLIB_EXIT_PROCESS("ERROR: drcctlib_drdeadspy dr_raw_tls_calloc fail");
     }
-    DRCCTLIB_PRINTF("before");
     drcctlib_init(DRCCTLIB_FILTER_MEM_ACCESS_INSTR, INVALID_FILE, InstrumentInsCallback,
                   false);
-    DRCCTLIB_PRINTF("after");
     dr_register_exit_event(ClientExit);
 
-    DRCCTLIB_PRINTF("end");
 }
 
 #ifdef __cplusplus
