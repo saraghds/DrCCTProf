@@ -349,9 +349,13 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     if (!dr_raw_tls_calloc(&tls_seg, &tls_offs, INSTRACE_TLS_COUNT, 0)) {
         DRCCTLIB_EXIT_PROCESS("ERROR: drcctlib_drdeadspy dr_raw_tls_calloc fail");
     }
+        DRCCTLIB_PRINTF("before");
     drcctlib_init(DRCCTLIB_FILTER_MEM_ACCESS_INSTR, INVALID_FILE, InstrumentInsCallback,
                   false);
+        DRCCTLIB_PRINTF("after");
     dr_register_exit_event(ClientExit);
+
+        DRCCTLIB_PRINTF("end");
 }
 
 #ifdef __cplusplus
