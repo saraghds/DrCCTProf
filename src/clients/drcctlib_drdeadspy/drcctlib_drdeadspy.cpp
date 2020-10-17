@@ -96,7 +96,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
 }
 // dr clean call
 void
-InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
+InsertMemCleancall(int32_t slot, int32_t num)//, bool is_write
 {
     DRCCTLIB_PRINTF("******InsertMemCleancall");
     void *drcontext = dr_get_current_drcontext();
@@ -104,8 +104,8 @@ InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
     context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
     for (int i = 0; i < num; i++) {
         if (pt->cur_buf_list[i].addr != 0) {
-            DoWhatClientWantTodoForMem(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i],
-                                       is_write);
+            // DoWhatClientWantTodoForMem(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i],
+                                    //    is_write);
         }
     }
     BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
@@ -268,9 +268,11 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     //     bool is_mem_write = instr_writes_memory(instr);
         bool is_mem_write = true;
     //     // DRCCTLIB_PRINTF("******is_mem_write");
-        dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
-                             OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
-                             is_mem_write);
+        // dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
+        //                      OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
+        //                      is_mem_write);
+    dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 2,
+                         OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num));
     //     // DRCCTLIB_PRINTF("******dr_insert_clean_call4");
     // }
 
