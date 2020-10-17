@@ -204,12 +204,12 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     for (int i = 0; i < instr_num_srcs(instr); i++) {
         DRCCTLIB_PRINTF("******InstrumentInsCallback1");
         DRCCTLIB_PRINTF("******i=%d", i);
-        opnd_t op = instr_get_src(instr, i);
-        DRCCTLIB_PRINTF("******op=%d", op);
-        if (opnd_is_memory_reference(op)) {
+        // opnd_t op = instr_get_src(instr, i);
+        // DRCCTLIB_PRINTF("******op=%d", op);
+        if (opnd_is_memory_reference(instr_get_src(instr, i))) {
             DRCCTLIB_PRINTF("******opnd_is_memory_reference");
             num++;
-            InstrumentMem(drcontext, bb, instr, op);
+            InstrumentMem(drcontext, bb, instr, instr_get_src(instr, i));
             is_mem = true;
         }
 
