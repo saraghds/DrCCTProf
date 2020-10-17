@@ -114,15 +114,16 @@ InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
 void
 InsertRegCleancall(int32_t slot, reg_id_t reg_id, bool is_write)
 {
-    // void *drcontext = dr_get_current_drcontext();
-    // per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
-    // context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
+    DRCCTLIB_PRINTF("******InsertRegCleancall");
+    void *drcontext = dr_get_current_drcontext();
+    per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
+    context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
     // for (int i = 0; i < num; i++) {
     //     if (pt->cur_buf_list[i].addr != 0) {
     //         DoWhatClientWantTodo(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i]);
     //     }
     // }
-    // BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
+    BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
 }
 
 // insert
@@ -212,7 +213,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         if (opnd_is_reg(op)) {
             DRCCTLIB_PRINTF("******InstrumentInsCallback2");
             int num_temp = opnd_num_regs_used(op);
-            for (int j = 1; j <= num_temp; j++) {
+            for (int j = 0; j < num_temp; j++) {
                 reg_id_t reg = opnd_get_reg_used(op, j);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
@@ -227,7 +228,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             InstrumentMem(drcontext, bb, instr, op);
 
             int num_temp = opnd_num_regs_used(op);
-            for (int j = 1; j <= num_temp; j++) {
+            for (int j = 0; j < num_temp; j++) {
                 DRCCTLIB_PRINTF("******InstrumentInsCallback4");
                 DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
                 reg_id_t reg = opnd_get_reg_used(op, j);
@@ -241,14 +242,14 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         if (opnd_is_reg(op)) {
             DRCCTLIB_PRINTF("******InstrumentInsCallback5");
             int num_temp = opnd_num_regs_used(op);
-            for (int j = 1; j <= num_temp; j++) {
+            for (int j = 0; j < num_temp; j++) {
                 reg_id_t reg = opnd_get_reg_used(op, j);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot), reg, true);
             }
         }
 
-        DRCCTLIB_PRINTF("******InstrumentInsCallback6");
+        DRCCTLIB_PRINTF("******InstrumentInsCallback6x");
     }
 
     if (is_mem) {
