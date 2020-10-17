@@ -62,6 +62,7 @@ void
 DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
                            mem_ref_t *ref, bool is_write)
 {
+    DRCCTLIB_PRINTF("******DoWhatClientWantTodoForMem");
     // add online analysis here
     app_pc mem_addr = ref->addr;
 
@@ -97,6 +98,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
 void
 InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
 {
+    DRCCTLIB_PRINTF("******InsertMemCleancall");
     void *drcontext = dr_get_current_drcontext();
     per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
     context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
@@ -192,7 +194,7 @@ InstrumentMem(void *drcontext, instrlist_t *ilist, instr_t *where, opnd_t ref)
 void
 InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
 {
-
+    DRCCTLIB_PRINTF("******InstrumentInsCallback");
     instrlist_t *bb = instrument_msg->bb;
     instr_t *instr = instrument_msg->instr;
     int32_t slot = instrument_msg->slot;
@@ -249,6 +251,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
 static void
 ClientThreadStart(void *drcontext)
 {
+    DRCCTLIB_PRINTF("******ClientThreadStart");
     per_thread_t *pt = (per_thread_t *)dr_thread_alloc(drcontext, sizeof(per_thread_t));
     if (pt == NULL) {
         DRCCTLIB_EXIT_PROCESS("pt == NULL");
@@ -272,6 +275,7 @@ ClientThreadEnd(void *drcontext)
 static void
 ClientInit(int argc, const char *argv[])
 {
+    DRCCTLIB_PRINTF("******ClientInit");
 }
 
 static void
