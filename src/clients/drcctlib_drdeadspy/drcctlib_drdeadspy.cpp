@@ -267,9 +267,9 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         DRCCTLIB_PRINTF("******InstrumentInsCallback6");
         bool is_mem_write = instr_writes_memory(instr);
         DRCCTLIB_PRINTF("******is_mem_write");
-        dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
-                             OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
-                             is_mem_write);
+        // dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
+        //                      OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
+        //                      is_mem_write);
         DRCCTLIB_PRINTF("******dr_insert_clean_call4");
     }
 
