@@ -201,6 +201,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     int num = 0;
     bool is_mem = false;
     for (int i = 0; i < instr_num_srcs(instr); i++) {
+    DRCCTLIB_PRINTF("******InstrumentInsCallback1");
         opnd_t op = instr_get_src(instr, i);
         if (opnd_is_memory_reference(op)) {
             num++;
@@ -209,15 +210,17 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         }
 
         if (opnd_is_reg(op)) {
+    DRCCTLIB_PRINTF("******InstrumentInsCallback2");
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
-                reg_id_t reg = opnd_get_reg_used(op, i);
+                reg_id_t reg = opnd_get_reg_used(op, j);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
             }
         }
     }
     for (int i = 0; i < instr_num_dsts(instr); i++) {
+    DRCCTLIB_PRINTF("******InstrumentInsCallback3");
         opnd_t op = instr_get_dst(instr, i);
         if (opnd_is_memory_reference(op)) {
             num++;
@@ -225,16 +228,18 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
 
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
-                reg_id_t reg = opnd_get_reg_used(op, i);
+    DRCCTLIB_PRINTF("******InstrumentInsCallback4");
+                reg_id_t reg = opnd_get_reg_used(op, j);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
             }
         }
 
         if (opnd_is_reg(op)) {
+    DRCCTLIB_PRINTF("******InstrumentInsCallback5");
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
-                reg_id_t reg = opnd_get_reg_used(op, i);
+                reg_id_t reg = opnd_get_reg_used(op, j);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot), reg, true);
             }
