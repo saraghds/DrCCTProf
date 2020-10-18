@@ -346,6 +346,9 @@ sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t
 static void
 ClientExit(void)
 {
+    dr_fprintf(gTraceFile,
+               "=====================================================================\n");
+
     std::vector<std::pair<int64_t, int32_t>> sorted_mem;
 
     std::map<int64_t, int32_t>::iterator it;
@@ -360,7 +363,7 @@ ClientExit(void)
         if (count >= TOP_REACH_NUM_SHOW) {
             break;
         }
-        dr_fprintf(gTraceFile, "dead occurances: %d\n", sorted_mem[i].first);
+        dr_fprintf(gTraceFile, "dead occurances: %d\n", sorted_mem[i].second);
         dr_fprintf(
             gTraceFile,
             "---------------------------------------------------------------------\n");
