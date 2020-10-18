@@ -53,7 +53,8 @@ typedef struct _context_handle_status {
 
 std::map<app_pc, context_handle_status> shadow_memory;
 std::map<reg_id_t, context_handle_status> shadow_register;
-std::map<int64_t, int32_t> dead_stores;
+std::map<int64_t, int32_t> dead_stores_mem;
+std::map<int64_t, int32_t> dead_stores_reg;
 
 #define TLS_MEM_REF_BUFF_SIZE 100
 
@@ -62,7 +63,7 @@ void
 DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
                            mem_ref_t *ref, int is_write)
 {
-    DRCCTLIB_PRINTF("******DoWhatClientWantTodoForMem");
+    // DRCCTLIB_PRINTF("******DoWhatClientWantTodoForMem");
     // add online analysis here
     app_pc mem_addr = ref->addr;
 
@@ -70,15 +71,15 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
         std::map<app_pc, context_handle_status>::iterator it;
         it = shadow_memory.find(mem_addr);
         if (it->second.is_write == 1) {
-            // add to dead_stores
+            // add to dead_stores_mem
             int64_t concat_contexts =
                 ((int64_t)it->second.ctxt_hndl << 32) | cur_ctxt_hndl;
             std::map<int64_t, int32_t>::iterator it2;
-            if (dead_stores.count(concat_contexts) > 0) {
-                it2 = dead_stores.find(concat_contexts);
+            if (dead_stores_mem.count(concat_contexts) > 0) {
+                it2 = dead_stores_mem.find(concat_contexts);
                 it2->second++;
             } else {
-                dead_stores.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
+                dead_stores_mem.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
         } else {
             it->second.is_write = 0;
@@ -94,6 +95,37 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
 
     // }
 }
+
+void
+DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
+                            reg_id_t reg_id, int is_write)
+{
+    // DRCCTLIB_PRINTF("******DoWhatClientWantTodoForReg");
+    if (shadow_register.count(reg_id) > 0) {
+        std::map<reg_id_t, context_handle_status>::iterator it;
+        it = shadow_register.find(reg_id);
+        if (it->second.is_write == 1) {
+            // add to dead_stores
+            int64_t concat_contexts =
+                ((int64_t)it->second.ctxt_hndl << 32) | cur_ctxt_hndl;
+            std::map<int64_t, int32_t>::iterator it2;
+            if (dead_stores_reg.count(concat_contexts) > 0) {
+                it2 = dead_stores_reg.find(concat_contexts);
+                it2->second++;
+            } else {
+                dead_stores_reg.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
+            }
+        } else {
+            it->second.is_write = 0;
+        }
+    } else {
+        context_handle_status cs;
+        cs.ctxt_hndl = cur_ctxt_hndl;
+        cs.is_write = is_write;
+        shadow_register.insert(std::pair<reg_id_t, context_handle_status>(reg_id, cs));
+    }
+}
+
 // dr clean call
 void
 InsertMemCleancall(int32_t slot, int32_t num, int is_write)
@@ -104,7 +136,7 @@ InsertMemCleancall(int32_t slot, int32_t num, int is_write)
     for (int i = 0; i < num; i++) {
         if (pt->cur_buf_list[i].addr != 0) {
             DoWhatClientWantTodoForMem(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i],
-               is_write);
+                                       is_write);
         }
     }
     BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
@@ -114,14 +146,15 @@ void
 InsertRegCleancall(int32_t slot, reg_id_t reg_id, int is_write)
 {
     void *drcontext = dr_get_current_drcontext();
-    per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
+    // per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
     context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
     // for (int i = 0; i < num; i++) {
     //     if (pt->cur_buf_list[i].addr != 0) {
     //         DoWhatClientWantTodo(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i]);
     //     }
     // }
-    BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
+    DoWhatClientWantTodoForReg(drcontext, cur_ctxt_hndl, reg_id, is_write);
+    // BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
 }
 
 // insert
@@ -252,7 +285,6 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                              OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
                              OPND_CREATE_CCT_INT(write));
     }
-
 }
 
 static void
