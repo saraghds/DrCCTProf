@@ -96,7 +96,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
 }
 // dr clean call
 void
-InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
+InsertMemCleancall(int32_t slot, int32_t num, int is_write)
 {
     DRCCTLIB_PRINTF("******InsertMemCleancall");
     void *drcontext = dr_get_current_drcontext();
@@ -112,7 +112,7 @@ InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
 }
 
 void
-InsertRegCleancall(int32_t slot, reg_id_t reg_id, bool is_write)
+InsertRegCleancall(int32_t slot, reg_id_t reg_id, int is_write)
 {
     DRCCTLIB_PRINTF("******InsertRegCleancall");
     void *drcontext = dr_get_current_drcontext();
@@ -221,7 +221,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                 reg_id_t reg = opnd_get_reg_used(op, j);
                 // DRCCTLIB_PRINTF("******reg=%d", reg);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-                                     false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
+                                     false, 3, OPND_CREATE_CCT_INT(slot),
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
                 // DRCCTLIB_PRINTF("******dr_insert_clean_call1");
             }
         }
@@ -244,7 +245,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                 reg_id_t reg = opnd_get_reg_used(op, j);
                 // DRCCTLIB_PRINTF("******reg=%d", reg);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-                                     false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
+                                     false, 3, OPND_CREATE_CCT_INT(slot),
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
                 // DRCCTLIB_PRINTF("******dr_insert_clean_call2");
             }
         }
@@ -257,7 +259,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                 reg_id_t reg = opnd_get_reg_used(op, j);
                 // DRCCTLIB_PRINTF("******reg=%d", reg);
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-                                     false, 3, OPND_CREATE_CCT_INT(slot), reg, true);
+                                     false, 3, OPND_CREATE_CCT_INT(slot),
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(1));
                 // DRCCTLIB_PRINTF("******dr_insert_clean_call3");
             }
         }
