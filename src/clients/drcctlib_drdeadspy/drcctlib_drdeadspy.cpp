@@ -346,6 +346,8 @@ sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t
 static void
 ClientExit(void)
 {
+    DRCCTLIB_PRINTF("dead_stores_reg size=%d", dead_stores_reg.size());
+
     dr_fprintf(gTraceFile,
                "=========================MEMORY DEAD STORES==========================\n");
 
@@ -385,7 +387,6 @@ ClientExit(void)
         count++;
     }
 
-    // TODO: register output
     dr_fprintf(gTraceFile,
                "=========================REGISTER DEAD STORES========================\n");
 
