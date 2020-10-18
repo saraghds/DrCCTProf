@@ -57,6 +57,9 @@ std::map<int64_t, int32_t> dead_stores_mem;
 std::map<int64_t, int32_t> dead_stores_reg;
 
 #define TLS_MEM_REF_BUFF_SIZE 100
+#define TOP_REACH_NUM_SHOW 100
+
+static file_t gTraceFile;
 
 // client want to do
 void
@@ -90,15 +93,11 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
         cs.is_write = is_write;
         shadow_memory.insert(std::pair<app_pc, context_handle_status>(mem_addr, cs));
     }
-
-    // for (it = shadow_memory.begin(); it != shadow_memory.end(); it++) {
-
-    // }
 }
 
 void
 DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
-                            reg_id_t reg_id, int is_write)
+                           reg_id_t reg_id, int is_write)
 {
     // DRCCTLIB_PRINTF("******DoWhatClientWantTodoForReg");
     if (shadow_register.count(reg_id) > 0) {
@@ -314,14 +313,63 @@ ClientThreadEnd(void *drcontext)
 static void
 ClientInit(int argc, const char *argv[])
 {
-    // DRCCTLIB_PRINTF("******ClientInit");
+#ifdef ARM_CCTLIB
+    char name[MAXIMUM_PATH] = "arm.drcctlib_drdeadspy.out.";
+#else
+    char name[MAXIMUM_PATH] = "x86.drcctlib_drdeadspy.out.";
+#endif
+
+    gethostname(name + strlen(name), MAXIMUM_PATH - strlen(name));
+    pid_t pid = getpid();
+    sprintf(name + strlen(name), "%d", pid);
+    DRCCTLIB_PRINTF("Creating log file at:%s", name);
+
+    gTraceFile = dr_open_file(name, DR_FILE_WRITE_OVERWRITE | DR_FILE_ALLOW_LARGE);
+    DR_ASSERT(gTraceFile != INVALID_FILE);
+    // print the arguments passed
+    dr_fprintf(gTraceFile, "\n");
+    for (int i = 0; i < argc; i++) {
+        dr_fprintf(gTraceFile, "%d %s ", i, argv[i]);
+    }
+    dr_fprintf(gTraceFile, "\n");
 }
 
 static void
 ClientExit(void)
 {
-    // add output module here
+    // TODO: sort dead_stores_mem here
+
+    dr_fprintf(gTraceFile, "total memory dead occurances: %d", dead_stores_mem.size());
+    dr_fprintf(gTraceFile,
+               "====================================================================="
+               "===========\n");
+
+    std::map<int64_t, int32_t>::iterator it;
+    int count = 0;
+    for (it = dead_stores_mem.begin(); it != dead_stores_mem.end(); it++) {
+        if (count >= TOP_REACH_NUM_SHOW) {
+            break;
+        }
+        dr_fprintf(gTraceFile, "dead occurances: %d", it->first);
+
+        int32_t dead_context = (int32_t)(it->first & 0xffffffffUL);
+        int32_t killing_context = (int32_t)(it->first >> 32);
+        drcctlib_print_ctxt_hndl_msg(gTraceFile, dead_context, false, false);
+        dr_fprintf(
+            gTraceFile,
+            "***************************************************\n");
+        drcctlib_print_ctxt_hndl_msg(gTraceFile, killing_context, false, false);
+            
+        dr_fprintf(
+            gTraceFile,
+            "---------------------------------------------------------------------\n");
+        count++;
+    }
+
+    //TODO: register output
+
     drcctlib_exit();
+    dr_close_file(gTraceFile);
 
     if (!dr_raw_tls_cfree(tls_offs, INSTRACE_TLS_COUNT)) {
         DRCCTLIB_EXIT_PROCESS("ERROR: drcctlib_drdeadspy dr_raw_tls_calloc fail");
