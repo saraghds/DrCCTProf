@@ -58,6 +58,7 @@ std::map<int64_t, int32_t> dead_stores_reg;
 
 #define TLS_MEM_REF_BUFF_SIZE 100
 #define TOP_REACH_NUM_SHOW 100
+#define MAX_CLIENT_CCT_PRINT_DEPTH 10
 
 static file_t gTraceFile;
 
@@ -339,34 +340,31 @@ ClientExit(void)
 {
     // TODO: sort dead_stores_mem here
 
-    dr_fprintf(gTraceFile, "total memory dead occurances: %d", dead_stores_mem.size());
-    dr_fprintf(gTraceFile,
-               "====================================================================="
-               "===========\n");
-
     std::map<int64_t, int32_t>::iterator it;
     int count = 0;
     for (it = dead_stores_mem.begin(); it != dead_stores_mem.end(); it++) {
         if (count >= TOP_REACH_NUM_SHOW) {
             break;
         }
-        dr_fprintf(gTraceFile, "dead occurances: %d", it->first);
+        dr_fprintf(gTraceFile, "dead occurances: %d\n", it->first);
 
         int32_t dead_context = (int32_t)(it->first & 0xffffffffUL);
         int32_t killing_context = (int32_t)(it->first >> 32);
         drcctlib_print_ctxt_hndl_msg(gTraceFile, dead_context, false, false);
-        dr_fprintf(
-            gTraceFile,
-            "***************************************************\n");
+        drcctlib_print_full_cct(gTraceFile, dead_context, true, false,
+                                MAX_CLIENT_CCT_PRINT_DEPTH);
+        dr_fprintf(gTraceFile, "***************************************************\n");
         drcctlib_print_ctxt_hndl_msg(gTraceFile, killing_context, false, false);
-            
+        drcctlib_print_full_cct(gTraceFile, killing_context, true, false,
+                                MAX_CLIENT_CCT_PRINT_DEPTH);
+
         dr_fprintf(
             gTraceFile,
             "---------------------------------------------------------------------\n");
         count++;
     }
 
-    //TODO: register output
+    // TODO: register output
 
     drcctlib_exit();
     dr_close_file(gTraceFile);
