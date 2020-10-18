@@ -12,6 +12,8 @@
 #include "drutil.h"
 #include "drcctlib.h"
 #include <map>
+#include <vector>
+#include <algorithm>
 using namespace std;
 
 #define DRCCTLIB_PRINTF(format, args...) \
@@ -338,29 +340,36 @@ ClientInit(int argc, const char *argv[])
 static void
 ClientExit(void)
 {
-    // TODO: sort dead_stores_mem here
+    std::vector<std::pair<int64_t, int32_t>> sorted_mem;
 
     std::map<int64_t, int32_t>::iterator it;
-    int count = 0;
     for (it = dead_stores_mem.begin(); it != dead_stores_mem.end(); it++) {
+        sorted_mem.push_back(make_pair(it->first, it->second));
+    }
+
+    sort(sorted_mem.begin(), sorted_mem.end(), sortByVal);
+
+    int count = 0;
+    for (int i = 0; i < sorted_mem.size(); i++) {
         if (count >= TOP_REACH_NUM_SHOW) {
             break;
         }
-        dr_fprintf(gTraceFile, "dead occurances: %d\n", it->first);
+        dr_fprintf(gTraceFile, "dead occurances: %d\n", sorted_mem[i].first);
+        dr_fprintf(
+            gTraceFile,
+            "---------------------------------------------------------------------\n");
 
-        int32_t dead_context = (int32_t)(it->first & 0xffffffffUL);
-        int32_t killing_context = (int32_t)(it->first >> 32);
-        drcctlib_print_ctxt_hndl_msg(gTraceFile, dead_context, false, false);
+        int32_t dead_context = (int32_t)(sorted_mem[i].first & 0xffffffffUL);
+        int32_t killing_context = (int32_t)(sorted_mem[i].first >> 32);
         drcctlib_print_full_cct(gTraceFile, dead_context, true, false,
                                 MAX_CLIENT_CCT_PRINT_DEPTH);
         dr_fprintf(gTraceFile, "***************************************************\n");
-        drcctlib_print_ctxt_hndl_msg(gTraceFile, killing_context, false, false);
         drcctlib_print_full_cct(gTraceFile, killing_context, true, false,
                                 MAX_CLIENT_CCT_PRINT_DEPTH);
 
         dr_fprintf(
             gTraceFile,
-            "---------------------------------------------------------------------\n");
+            "=====================================================================\n");
         count++;
     }
 
@@ -383,6 +392,12 @@ ClientExit(void)
         DRCCTLIB_PRINTF("failed to exit drreg");
     }
     drutil_exit();
+}
+
+bool
+sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t> &b)
+{
+    return (a.second < b.second);
 }
 
 #ifdef __cplusplus
