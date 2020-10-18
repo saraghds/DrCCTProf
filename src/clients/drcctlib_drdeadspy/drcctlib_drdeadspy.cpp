@@ -96,7 +96,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
 }
 // dr clean call
 void
-InsertMemCleancall(int32_t slot, int32_t num)//, bool is_write
+InsertMemCleancall(int32_t slot, int32_t num, bool is_write)
 {
     DRCCTLIB_PRINTF("******InsertMemCleancall");
     void *drcontext = dr_get_current_drcontext();
@@ -105,7 +105,7 @@ InsertMemCleancall(int32_t slot, int32_t num)//, bool is_write
     for (int i = 0; i < num; i++) {
         if (pt->cur_buf_list[i].addr != 0) {
             // DoWhatClientWantTodoForMem(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i],
-                                    //    is_write);
+            //    is_write);
         }
     }
     BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
@@ -213,18 +213,18 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             is_mem = true;
         }
 
-        // if (opnd_is_reg(op)) {
-        //     // DRCCTLIB_PRINTF("******InstrumentInsCallback2");
-        //     int num_temp = opnd_num_regs_used(op);
-        //     for (int j = 0; j < num_temp; j++) {
-        //         // DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
-        //         reg_id_t reg = opnd_get_reg_used(op, j);
-        //         // DRCCTLIB_PRINTF("******reg=%d", reg);
-        //         dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-        //                              false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
-        //         // DRCCTLIB_PRINTF("******dr_insert_clean_call1");
-        //     }
-        // }
+        if (opnd_is_reg(op)) {
+            // DRCCTLIB_PRINTF("******InstrumentInsCallback2");
+            int num_temp = opnd_num_regs_used(op);
+            for (int j = 0; j < num_temp; j++) {
+                // DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
+                reg_id_t reg = opnd_get_reg_used(op, j);
+                // DRCCTLIB_PRINTF("******reg=%d", reg);
+                dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
+                                     false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
+                // DRCCTLIB_PRINTF("******dr_insert_clean_call1");
+            }
+        }
     }
     for (int i = 0; i < instr_num_dsts(instr); i++) {
         // DRCCTLIB_PRINTF("******InstrumentInsCallback3");
@@ -237,44 +237,44 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             InstrumentMem(drcontext, bb, instr, op);
             is_mem = true;
 
-            // int num_temp = opnd_num_regs_used(op);
-            // for (int j = 0; j < num_temp; j++) {
-            //     // DRCCTLIB_PRINTF("******InstrumentInsCallback4");
-            //     // DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
-            //     reg_id_t reg = opnd_get_reg_used(op, j);
-            //     // DRCCTLIB_PRINTF("******reg=%d", reg);
-            //     dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-            //                          false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
-            //     // DRCCTLIB_PRINTF("******dr_insert_clean_call2");
-            // }
+            int num_temp = opnd_num_regs_used(op);
+            for (int j = 0; j < num_temp; j++) {
+                // DRCCTLIB_PRINTF("******InstrumentInsCallback4");
+                // DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
+                reg_id_t reg = opnd_get_reg_used(op, j);
+                // DRCCTLIB_PRINTF("******reg=%d", reg);
+                dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
+                                     false, 3, OPND_CREATE_CCT_INT(slot), reg, false);
+                // DRCCTLIB_PRINTF("******dr_insert_clean_call2");
+            }
         }
 
-        // if (opnd_is_reg(op)) {
-        //     // DRCCTLIB_PRINTF("******InstrumentInsCallback5");
-        //     int num_temp = opnd_num_regs_used(op);
-        //     for (int j = 0; j < num_temp; j++) {
-        //         // DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
-        //         reg_id_t reg = opnd_get_reg_used(op, j);
-        //         // DRCCTLIB_PRINTF("******reg=%d", reg);
-        //         dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-        //                              false, 3, OPND_CREATE_CCT_INT(slot), reg, true);
-        //         // DRCCTLIB_PRINTF("******dr_insert_clean_call3");
-        //     }
-        // }
+        if (opnd_is_reg(op)) {
+            // DRCCTLIB_PRINTF("******InstrumentInsCallback5");
+            int num_temp = opnd_num_regs_used(op);
+            for (int j = 0; j < num_temp; j++) {
+                // DRCCTLIB_PRINTF("******num_temp=%d", num_temp);
+                reg_id_t reg = opnd_get_reg_used(op, j);
+                // DRCCTLIB_PRINTF("******reg=%d", reg);
+                dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
+                                     false, 3, OPND_CREATE_CCT_INT(slot), reg, true);
+                // DRCCTLIB_PRINTF("******dr_insert_clean_call3");
+            }
+        }
     }
 
-    // if (is_mem) {
-    //     // DRCCTLIB_PRINTF("******InstrumentInsCallback6");
-    //     bool is_mem_write = instr_writes_memory(instr);
-        bool is_mem_write = true;
-    //     // DRCCTLIB_PRINTF("******is_mem_write");
-        // dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
-        //                      OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
-        //                      is_mem_write);
-    dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 2,
-                         OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num));
-    //     // DRCCTLIB_PRINTF("******dr_insert_clean_call4");
-    // }
+    if (is_mem) {
+        //     // DRCCTLIB_PRINTF("******InstrumentInsCallback6");
+        bool is_mem_write = instr_writes_memory(instr);
+        int write = 0;
+        if (is_mem_write)
+            write = 1;
+        //     // DRCCTLIB_PRINTF("******is_mem_write");
+        dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
+                             OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
+                             OPND_CREATE_CCT_INT(write));
+        //     // DRCCTLIB_PRINTF("******dr_insert_clean_call4");
+    }
 
     // DRCCTLIB_PRINTF("******InstrumentInsCallback7");
 }
@@ -369,7 +369,6 @@ dr_client_main(client_id_t id, int argc, const char *argv[])
     drcctlib_init(DRCCTLIB_FILTER_MEM_ACCESS_INSTR, INVALID_FILE, InstrumentInsCallback,
                   false);
     dr_register_exit_event(ClientExit);
-
 }
 
 #ifdef __cplusplus
