@@ -340,7 +340,7 @@ ClientInit(int argc, const char *argv[])
 bool
 sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t> &b)
 {
-    return (a.second < b.second);
+    return (a.second > b.second);
 }
 
 static void
