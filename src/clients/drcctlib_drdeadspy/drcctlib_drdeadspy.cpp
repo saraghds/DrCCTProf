@@ -347,6 +347,9 @@ static void
 ClientExit(void)
 {
     dr_fprintf(gTraceFile,
+               "=========================MEMORY DEAD STORES==========================\n");
+
+    dr_fprintf(gTraceFile,
                "=====================================================================\n");
 
     std::vector<std::pair<int64_t, int32_t>> sorted_mem;
@@ -370,10 +373,10 @@ ClientExit(void)
 
         int32_t dead_context = (int32_t)(sorted_mem[i].first & 0xffffffffUL);
         int32_t killing_context = (int32_t)(sorted_mem[i].first >> 32);
-        drcctlib_print_full_cct(gTraceFile, dead_context, true, false,
+        drcctlib_print_full_cct(gTraceFile, dead_context, true, true,
                                 MAX_CLIENT_CCT_PRINT_DEPTH);
         dr_fprintf(gTraceFile, "***************************************************\n");
-        drcctlib_print_full_cct(gTraceFile, killing_context, true, false,
+        drcctlib_print_full_cct(gTraceFile, killing_context, true, true,
                                 MAX_CLIENT_CCT_PRINT_DEPTH);
 
         dr_fprintf(
@@ -383,6 +386,44 @@ ClientExit(void)
     }
 
     // TODO: register output
+    dr_fprintf(gTraceFile,
+               "=========================REGISTER DEAD STORES========================\n");
+
+    dr_fprintf(gTraceFile,
+               "=====================================================================\n");
+
+    std::vector<std::pair<int64_t, int32_t>> sorted_reg;
+
+    std::map<int64_t, int32_t>::iterator it;
+    for (it = dead_stores_reg.begin(); it != dead_stores_reg.end(); it++) {
+        sorted_reg.push_back(make_pair(it->first, it->second));
+    }
+
+    sort(sorted_reg.begin(), sorted_reg.end(), sortByVal);
+
+    int count = 0;
+    for (uint i = 0; i < sorted_reg.size(); i++) {
+        if (count >= TOP_REACH_NUM_SHOW) {
+            break;
+        }
+        dr_fprintf(gTraceFile, "dead occurances: %d\n", sorted_reg[i].second);
+        dr_fprintf(
+            gTraceFile,
+            "---------------------------------------------------------------------\n");
+
+        int32_t dead_context = (int32_t)(sorted_reg[i].first & 0xffffffffUL);
+        int32_t killing_context = (int32_t)(sorted_reg[i].first >> 32);
+        drcctlib_print_full_cct(gTraceFile, dead_context, true, true,
+                                MAX_CLIENT_CCT_PRINT_DEPTH);
+        dr_fprintf(gTraceFile, "***************************************************\n");
+        drcctlib_print_full_cct(gTraceFile, killing_context, true, true,
+                                MAX_CLIENT_CCT_PRINT_DEPTH);
+
+        dr_fprintf(
+            gTraceFile,
+            "=====================================================================\n");
+        count++;
+    }
 
     drcctlib_exit();
     dr_close_file(gTraceFile);
