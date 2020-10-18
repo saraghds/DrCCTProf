@@ -337,6 +337,12 @@ ClientInit(int argc, const char *argv[])
     dr_fprintf(gTraceFile, "\n");
 }
 
+bool
+sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t> &b)
+{
+    return (a.second < b.second);
+}
+
 static void
 ClientExit(void)
 {
@@ -350,7 +356,7 @@ ClientExit(void)
     sort(sorted_mem.begin(), sorted_mem.end(), sortByVal);
 
     int count = 0;
-    for (int i = 0; i < sorted_mem.size(); i++) {
+    for (uint i = 0; i < sorted_mem.size(); i++) {
         if (count >= TOP_REACH_NUM_SHOW) {
             break;
         }
@@ -392,12 +398,6 @@ ClientExit(void)
         DRCCTLIB_PRINTF("failed to exit drreg");
     }
     drutil_exit();
-}
-
-bool
-sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t> &b)
-{
-    return (a.second < b.second);
 }
 
 #ifdef __cplusplus
