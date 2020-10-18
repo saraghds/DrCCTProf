@@ -394,14 +394,14 @@ ClientExit(void)
 
     std::vector<std::pair<int64_t, int32_t>> sorted_reg;
 
-    std::map<int64_t, int32_t>::iterator it;
-    for (it = dead_stores_reg.begin(); it != dead_stores_reg.end(); it++) {
-        sorted_reg.push_back(make_pair(it->first, it->second));
+    std::map<int64_t, int32_t>::iterator it2;
+    for (it2 = dead_stores_reg.begin(); it2 != dead_stores_reg.end(); it++) {
+        sorted_reg.push_back(make_pair(it2->first, it2->second));
     }
 
     sort(sorted_reg.begin(), sorted_reg.end(), sortByVal);
 
-    int count = 0;
+    count = 0;
     for (uint i = 0; i < sorted_reg.size(); i++) {
         if (count >= TOP_REACH_NUM_SHOW) {
             break;
