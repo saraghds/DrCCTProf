@@ -21,7 +21,7 @@ g++ -g ${SRC}/test_app_multithread.cpp -o ${BUILD}/test_app_multithread -pthread
 g++ -g ${SRC}/test_app_reuse.cpp -o ${BUILD}/test_app_reuse 
 g++ -g ${SRC}/test_app_signal.cpp -o ${BUILD}/test_app_signal
 g++ -g ${SRC}/test_app_p0_512.cpp -o ${BUILD}/test_app_p0_512
-g++ -O0 ${SRC}/test1-memory.cpp -o ${BUILD}/test1-memory
-g++ -O0 ${SRC}/test2-register.cpp -o ${BUILD}/test2-register
-g++ -O0 ${SRC}/test-simple.cpp -o ${BUILD}/test-simple
+g++ -O0 -g ${SRC}/test1-memory.cpp -o ${BUILD}/test1-memory
+g++ -O0 -g ${SRC}/test2-register.cpp -o ${BUILD}/test2-register
+g++ -O0 -g ${SRC}/test-simple.cpp -o ${BUILD}/test-simple
 echo -e "\033[32m Build test apps successfully! \033[0m"

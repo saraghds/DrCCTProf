@@ -41,6 +41,7 @@ static uint tls_offs;
 typedef struct _mem_ref_t {
     app_pc addr;
     size_t size;
+    int32_t is_write;
 } mem_ref_t;
 
 typedef struct _per_thread_t {
@@ -130,7 +131,7 @@ DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
 
 // dr clean call
 void
-InsertMemCleancall(int32_t slot, int32_t num, int is_write)
+InsertMemCleancall(int32_t slot, int32_t num)
 {
     void *drcontext = dr_get_current_drcontext();
     per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
@@ -161,7 +162,8 @@ InsertRegCleancall(int32_t slot, reg_id_t reg_id, int is_write)
 
 // insert
 static void
-InstrumentMem(void *drcontext, instrlist_t *ilist, instr_t *where, opnd_t ref)
+InstrumentMem(void *drcontext, instrlist_t *ilist, instr_t *where, opnd_t ref,
+              int32_t is_write)
 {
     /* We need two scratch registers */
     reg_id_t reg_mem_ref_ptr, free_reg;
@@ -184,6 +186,13 @@ InstrumentMem(void *drcontext, instrlist_t *ilist, instr_t *where, opnd_t ref)
             XINST_CREATE_store(
                 drcontext, OPND_CREATE_MEMPTR(reg_mem_ref_ptr, offsetof(mem_ref_t, addr)),
                 opnd_create_reg(free_reg)));
+
+    // store mem_ref_t->is_write
+    MINSERT(ilist, where,
+            XINST_CREATE_store(
+                drcontext,
+                OPND_CREATE_MEMPTR(reg_mem_ref_ptr, offsetof(mem_ref_t, is_write)),
+                OPND_CREATE_CCT_INT(drutil_opnd_mem_size_in_bytes(ref, where))));
 
     // store mem_ref_t->size
 #ifdef ARM_CCTLIB
@@ -232,13 +241,11 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     instr_t *instr = instrument_msg->instr;
     int32_t slot = instrument_msg->slot;
     int num = 0;
-    bool is_mem = false;
     for (int i = 0; i < instr_num_srcs(instr); i++) {
         opnd_t op = instr_get_src(instr, i);
         if (opnd_is_memory_reference(op)) {
             num++;
-            InstrumentMem(drcontext, bb, instr, op);
-            is_mem = true;
+            InstrumentMem(drcontext, bb, instr, op, 0);
         }
 
         if (opnd_is_reg(op)) {
@@ -255,8 +262,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         opnd_t op = instr_get_dst(instr, i);
         if (opnd_is_memory_reference(op)) {
             num++;
-            InstrumentMem(drcontext, bb, instr, op);
-            is_mem = true;
+            InstrumentMem(drcontext, bb, instr, op, 1);
 
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
@@ -278,15 +284,14 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         }
     }
 
-    if (is_mem) {
-        bool is_mem_write = instr_writes_memory(instr);
-        int write = 0;
-        if (is_mem_write)
-            write = 1;
-        dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 3,
-                             OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num),
-                             OPND_CREATE_CCT_INT(write));
-    }
+    dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 2,
+                         OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num));
+    // if (is_mem) {
+    //     bool is_mem_write = instr_writes_memory(instr);
+    //     int write = 0;
+    //     if (is_mem_write)
+    //         write = 1;
+    // }
 }
 
 static void
