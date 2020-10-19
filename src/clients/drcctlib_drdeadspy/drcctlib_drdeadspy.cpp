@@ -241,15 +241,15 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             is_mem = true;
         }
 
-        if (opnd_is_reg(op)) {
-            int num_temp = opnd_num_regs_used(op);
-            for (int j = 0; j < num_temp; j++) {
-                reg_id_t reg = opnd_get_reg_used(op, j);
-                dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-                                     false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
-            }
-        }
+        // if (opnd_is_reg(op)) {
+        //     int num_temp = opnd_num_regs_used(op);
+        //     for (int j = 0; j < num_temp; j++) {
+        //         reg_id_t reg = opnd_get_reg_used(op, j);
+        //         dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
+        //                              false, 3, OPND_CREATE_CCT_INT(slot),
+        //                              OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
+        //     }
+        // }
     }
     for (int i = 0; i < instr_num_dsts(instr); i++) {
         opnd_t op = instr_get_dst(instr, i);
@@ -346,8 +346,6 @@ sortByVal(const std::pair<int64_t, int32_t> &a, const std::pair<int64_t, int32_t
 static void
 ClientExit(void)
 {
-    DRCCTLIB_PRINTF("dead_stores_reg size=%d", dead_stores_reg.size());
-
     dr_fprintf(gTraceFile,
                "=========================MEMORY DEAD STORES==========================\n");
 
@@ -395,16 +393,12 @@ ClientExit(void)
 
     std::vector<std::pair<int64_t, int32_t>> sorted_reg;
 
-    int felan = 0;
     std::map<int64_t, int32_t>::iterator it2;
     for (it2 = dead_stores_reg.begin(); it2 != dead_stores_reg.end(); it2++) {
-        DRCCTLIB_PRINTF("felan=%d", felan);
         sorted_reg.push_back(make_pair(it2->first, it2->second));
-        felan++;
     }
 
     sort(sorted_reg.begin(), sorted_reg.end(), sortByVal);
-    DRCCTLIB_PRINTF("after sort");
 
     count = 0;
     for (uint i = 0; i < sorted_reg.size(); i++) {
