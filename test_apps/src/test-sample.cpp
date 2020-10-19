@@ -1,3 +1,5 @@
+//COPYRIGHT https://github.com/MohitR1999/cpp-store
+
 #include <bits/stdc++.h>
 #include <stdlib.h>
 
