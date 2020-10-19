@@ -397,7 +397,7 @@ ClientExit(void)
 
     int felan = 0;
     std::map<int64_t, int32_t>::iterator it2;
-    for (it2 = dead_stores_reg.begin(); it2 != dead_stores_reg.end(); it++) {
+    for (it2 = dead_stores_reg.begin(); it2 != dead_stores_reg.end(); it2++) {
         DRCCTLIB_PRINTF("felan=%d", felan);
         sorted_reg.push_back(make_pair(it2->first, it2->second));
         felan++;
