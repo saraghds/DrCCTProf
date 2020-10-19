@@ -239,11 +239,13 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     instr_t *instr = instrument_msg->instr;
     int32_t slot = instrument_msg->slot;
     int num = 0;
+    bool is_mem = false;
     for (int i = 0; i < instr_num_srcs(instr); i++) {
         opnd_t op = instr_get_src(instr, i);
         if (opnd_is_memory_reference(op)) {
             num++;
             InstrumentMem(drcontext, bb, instr, op, 0);
+            is_mem = true;
         }
 
         if (opnd_is_reg(op)) {
@@ -261,6 +263,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
         if (opnd_is_memory_reference(op)) {
             num++;
             InstrumentMem(drcontext, bb, instr, op, 1);
+            is_mem = true;
 
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
@@ -281,9 +284,11 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             }
         }
     }
-
-    dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 2,
-                         OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num));
+    
+    if (is_mem) {
+        dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 2,
+                             OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num));
+    }
     // if (is_mem) {
     //     bool is_mem_write = instr_writes_memory(instr);
     //     int write = 0;
