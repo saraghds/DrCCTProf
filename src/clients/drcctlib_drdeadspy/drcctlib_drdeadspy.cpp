@@ -190,7 +190,7 @@ InstrumentMem(void *drcontext, instrlist_t *ilist, instr_t *where, opnd_t ref,
             XINST_CREATE_store(
                 drcontext,
                 OPND_CREATE_MEMPTR(reg_mem_ref_ptr, offsetof(mem_ref_t, is_write)),
-                OPND_CREATE_CCT_INT(drutil_opnd_mem_size_in_bytes(ref, where))));
+                OPND_CREATE_CCT_INT(is_write)));
 
     // store mem_ref_t->size
 #ifdef ARM_CCTLIB
@@ -284,7 +284,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             }
         }
     }
-    
+
     if (is_mem) {
         dr_insert_clean_call(drcontext, bb, instr, (void *)InsertMemCleancall, false, 2,
                              OPND_CREATE_CCT_INT(slot), OPND_CREATE_CCT_INT(num));
