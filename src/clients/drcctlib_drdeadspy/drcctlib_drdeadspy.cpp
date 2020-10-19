@@ -241,15 +241,15 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             is_mem = true;
         }
 
-        // if (opnd_is_reg(op)) {
-        //     int num_temp = opnd_num_regs_used(op);
-        //     for (int j = 0; j < num_temp; j++) {
-        //         reg_id_t reg = opnd_get_reg_used(op, j);
-        //         dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
-        //                              false, 3, OPND_CREATE_CCT_INT(slot),
-        //                              OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
-        //     }
-        // }
+        if (opnd_is_reg(op)) {
+            int num_temp = opnd_num_regs_used(op);
+            for (int j = 0; j < num_temp; j++) {
+                reg_id_t reg = opnd_get_reg_used(op, j);
+                dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
+                                     false, 3, OPND_CREATE_CCT_INT(slot),
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
+            }
+        }
     }
     for (int i = 0; i < instr_num_dsts(instr); i++) {
         opnd_t op = instr_get_dst(instr, i);
