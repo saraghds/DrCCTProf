@@ -51,7 +51,7 @@ typedef struct _per_thread_t {
 
 typedef struct _context_handle_status {
     context_handle_t ctxt_hndl;
-    int is_write;
+    int32_t is_write;
 } context_handle_status;
 
 std::map<app_pc, context_handle_status> shadow_memory;
@@ -68,11 +68,11 @@ static file_t gTraceFile;
 // client want to do
 void
 DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
-                           mem_ref_t *ref, int is_write)
+                           mem_ref_t *ref)
 {
-    // DRCCTLIB_PRINTF("******DoWhatClientWantTodoForMem");
     // add online analysis here
     app_pc mem_addr = ref->addr;
+    int32_t is_write = ref->is_write;
 
     if (shadow_memory.count(mem_addr) > 0) {
         std::map<app_pc, context_handle_status>::iterator it;
@@ -103,7 +103,6 @@ void
 DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
                            reg_id_t reg_id, int is_write)
 {
-    // DRCCTLIB_PRINTF("******DoWhatClientWantTodoForReg");
     if (shadow_register.count(reg_id) > 0) {
         std::map<reg_id_t, context_handle_status>::iterator it;
         it = shadow_register.find(reg_id);
@@ -138,8 +137,7 @@ InsertMemCleancall(int32_t slot, int32_t num)
     context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
     for (int i = 0; i < num; i++) {
         if (pt->cur_buf_list[i].addr != 0) {
-            DoWhatClientWantTodoForMem(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i],
-                                       is_write);
+            DoWhatClientWantTodoForMem(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i]);
         }
     }
     BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
@@ -297,7 +295,6 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
 static void
 ClientThreadStart(void *drcontext)
 {
-    // DRCCTLIB_PRINTF("******ClientThreadStart");
     per_thread_t *pt = (per_thread_t *)dr_thread_alloc(drcontext, sizeof(per_thread_t));
     if (pt == NULL) {
         DRCCTLIB_EXIT_PROCESS("pt == NULL");
