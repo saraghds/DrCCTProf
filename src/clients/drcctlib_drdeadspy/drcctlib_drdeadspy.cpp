@@ -77,7 +77,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
     if (shadow_memory.count(mem_addr) > 0) {
         std::map<app_pc, context_handle_status>::iterator it;
         it = shadow_memory.find(mem_addr);
-        if (it->second.is_write == 1) {
+        if (it->second.is_write == 1 && is_write == 1) {
             // add to dead_stores_mem
             int64_t concat_contexts =
                 ((int64_t)it->second.ctxt_hndl << 32) | cur_ctxt_hndl;
@@ -89,7 +89,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
                 dead_stores_mem.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
         } else {
-            it->second.is_write = 0;
+            it->second.is_write = is_write;
         }
     } else {
         context_handle_status cs;
@@ -106,7 +106,7 @@ DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
     if (shadow_register.count(reg_id) > 0) {
         std::map<reg_id_t, context_handle_status>::iterator it;
         it = shadow_register.find(reg_id);
-        if (it->second.is_write == 1) {
+        if (it->second.is_write == 1 && is_write == 1) {
             // add to dead_stores
             int64_t concat_contexts =
                 ((int64_t)it->second.ctxt_hndl << 32) | cur_ctxt_hndl;
@@ -118,7 +118,7 @@ DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
                 dead_stores_reg.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
         } else {
-            it->second.is_write = 0;
+            it->second.is_write = is_write;
         }
     } else {
         context_handle_status cs;
@@ -147,15 +147,8 @@ void
 InsertRegCleancall(int32_t slot, reg_id_t reg_id, int is_write)
 {
     void *drcontext = dr_get_current_drcontext();
-    // per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
     context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, slot);
-    // for (int i = 0; i < num; i++) {
-    //     if (pt->cur_buf_list[i].addr != 0) {
-    //         DoWhatClientWantTodo(drcontext, cur_ctxt_hndl, &pt->cur_buf_list[i]);
-    //     }
-    // }
     DoWhatClientWantTodoForReg(drcontext, cur_ctxt_hndl, reg_id, is_write);
-    // BUF_PTR(pt->cur_buf, mem_ref_t, INSTRACE_TLS_OFFS_BUF_PTR) = pt->cur_buf_list;
 }
 
 // insert
