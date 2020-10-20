@@ -101,7 +101,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
 
 void
 DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
-                           reg_id_t reg_id, int is_write)
+                           reg_id_t reg_id, int32_t is_write)
 {
     if (shadow_register.count(reg_id) > 0) {
         std::map<reg_id_t, context_handle_status>::iterator it;
@@ -144,7 +144,7 @@ InsertMemCleancall(int32_t slot, int32_t num)
 }
 
 void
-InsertRegCleancall(int32_t slot, reg_id_t reg_id, int is_write)
+InsertRegCleancall(int32_t slot, reg_id_t reg_id, int32_t is_write)
 {
     void *drcontext = dr_get_current_drcontext();
     per_thread_t *pt = (per_thread_t *)drmgr_get_tls_field(drcontext, tls_idx);
@@ -235,6 +235,7 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
     int32_t slot = instrument_msg->slot;
     int num = 0;
     bool is_mem = false;
+    int32_t is_write = 0;
     for (int i = 0; i < instr_num_srcs(instr); i++) {
         opnd_t op = instr_get_src(instr, i);
         if (opnd_is_memory_reference(op)) {
@@ -247,9 +248,10 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
                 reg_id_t reg = opnd_get_reg_used(op, j);
+                is_write = 0;
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(is_write));
             }
         }
     }
@@ -263,9 +265,10 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
                 reg_id_t reg = opnd_get_reg_used(op, j);
+                is_write = 0;
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(0));
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(is_write));
             }
         }
 
@@ -273,9 +276,10 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
             int num_temp = opnd_num_regs_used(op);
             for (int j = 0; j < num_temp; j++) {
                 reg_id_t reg = opnd_get_reg_used(op, j);
+                is_write = 1;
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(1));
+                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(is_write));
             }
         }
     }
