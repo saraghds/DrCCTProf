@@ -88,10 +88,9 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
             } else {
                 dead_stores_mem.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
-        } else {
-            it->second.ctxt_hndl = cur_ctxt_hndl;
-            it->second.is_write = is_write;
         }
+        it->second.ctxt_hndl = cur_ctxt_hndl;
+        it->second.is_write = is_write;
     } else {
         context_handle_status cs;
         cs.ctxt_hndl = cur_ctxt_hndl;
@@ -118,10 +117,9 @@ DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
             } else {
                 dead_stores_reg.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
-        } else {
-            it->second.ctxt_hndl = cur_ctxt_hndl;
-            it->second.is_write = is_write;
         }
+        it->second.ctxt_hndl = cur_ctxt_hndl;
+        it->second.is_write = is_write;
     } else {
         context_handle_status cs;
         cs.ctxt_hndl = cur_ctxt_hndl;
@@ -253,7 +251,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                 is_write = 0;
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(is_write));
+                                     OPND_CREATE_CCT_INT(reg),
+                                     OPND_CREATE_CCT_INT(is_write));
             }
         }
     }
@@ -270,7 +269,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                 is_write = 0;
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(is_write));
+                                     OPND_CREATE_CCT_INT(reg),
+                                     OPND_CREATE_CCT_INT(is_write));
             }
         }
 
@@ -281,7 +281,8 @@ InstrumentInsCallback(void *drcontext, instr_instrument_msg_t *instrument_msg)
                 is_write = 1;
                 dr_insert_clean_call(drcontext, bb, instr, (void *)InsertRegCleancall,
                                      false, 3, OPND_CREATE_CCT_INT(slot),
-                                     OPND_CREATE_CCT_INT(reg), OPND_CREATE_CCT_INT(is_write));
+                                     OPND_CREATE_CCT_INT(reg),
+                                     OPND_CREATE_CCT_INT(is_write));
             }
         }
     }
