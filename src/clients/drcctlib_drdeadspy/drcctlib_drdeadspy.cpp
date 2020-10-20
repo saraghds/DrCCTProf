@@ -89,6 +89,7 @@ DoWhatClientWantTodoForMem(void *drcontext, context_handle_t cur_ctxt_hndl,
                 dead_stores_mem.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
         } else {
+            it->second.ctxt_hndl = cur_ctxt_hndl;
             it->second.is_write = is_write;
         }
     } else {
@@ -118,6 +119,7 @@ DoWhatClientWantTodoForReg(void *drcontext, context_handle_t cur_ctxt_hndl,
                 dead_stores_reg.insert(std::pair<int64_t, int32_t>(concat_contexts, 1));
             }
         } else {
+            it->second.ctxt_hndl = cur_ctxt_hndl;
             it->second.is_write = is_write;
         }
     } else {
