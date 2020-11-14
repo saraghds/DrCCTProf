@@ -89,6 +89,8 @@ post_free(void *wrapcxt, void *user_data);
 static void
 module_load_event(void *drcontext, const module_data_t *mod, bool loaded)
 {
+    DRCCTLIB_PRINTF("module_load_event");
+
     app_pc towrap_malloc = (app_pc)dr_get_proc_address(mod->handle, MALLOC_ROUTINE_NAME);
     if (towrap_malloc != NULL) {
         drwrap_wrap(towrap_malloc, pre_malloc, post_malloc);
@@ -122,8 +124,12 @@ module_load_event(void *drcontext, const module_data_t *mod, bool loaded)
 static void
 pre_malloc(void *wrapcxt, OUT void **user_data)
 {
+    DRCCTLIB_PRINTF("pre_malloc");
+
     /* malloc(size) or HeapAlloc(heap, flags, size) */
     size_t sz = (size_t)drwrap_get_arg(wrapcxt, IF_WINDOWS_ELSE(2, 0));
+    DRCCTLIB_PRINTF("pre_malloc size %d", sz);
+
     // /* find the maximum malloc request */
     // if (sz > max_malloc) {
     //     dr_mutex_lock(max_lock);
@@ -139,10 +145,17 @@ pre_malloc(void *wrapcxt, OUT void **user_data)
 static void
 post_malloc(void *wrapcxt, void *user_data)
 {
+    DRCCTLIB_PRINTF("post_malloc");
+
     // uintptr_t retaddr = (uintptr_t)drwrap_get_retaddr(wrapcxt);
     app_pc malloc_addr = (app_pc)drwrap_get_retval(wrapcxt);
 
+    DRCCTLIB_PRINTF("post_malloc malloc_addr %d", malloc_addr);
+    DRCCTLIB_PRINTF("post_malloc original_allocation_size %d", original_allocation_size);
+
     app_pc red_zone_addr = malloc_addr + original_allocation_size;
+
+    DRCCTLIB_PRINTF("post_malloc red_zone_addr %d", red_zone_addr);
 
     void *drcontext = dr_get_current_drcontext();
     context_handle_t cur_ctxt_hndl = drcctlib_get_context_handle(drcontext, 0);
@@ -169,6 +182,8 @@ post_malloc(void *wrapcxt, void *user_data)
 static void
 pre_free(void *wrapcxt, OUT void **user_data)
 {
+    DRCCTLIB_PRINTF("pre_free");
+
     /* free(void *ptr) */
     app_pc free_addr = (app_pc)drwrap_get_arg(wrapcxt, 0);
 
@@ -195,15 +210,26 @@ post_free(void *wrapcxt, void *user_data)
 void
 DoWhatClientWantTodo(void *drcontext, context_handle_t cur_ctxt_hndl, mem_ref_t *ref)
 {
+    DRCCTLIB_PRINTF("DoWhatClientWantTodo");
+
     size_t mem_size = ref->size;
     app_pc mem_addr = ref->addr;
 
+    DRCCTLIB_PRINTF("DoWhatClientWantTodo mem_size %d", mem_size);
+    DRCCTLIB_PRINTF("DoWhatClientWantTodo mem_addr %d", mem_addr);
+
     for (size_t i = 0; i < mem_size; i++) {
+        DRCCTLIB_PRINTF("DoWhatClientWantTodo i %d", i);
+
         if (redmap.count(mem_addr + i) > 0) {
+            DRCCTLIB_PRINTF("DoWhatClientWantTodo inside if");
+
             std::map<app_pc, red_map_item>::iterator it;
             it = redmap.find(mem_addr + i);
             int64_t concat_contexts =
                 ((int64_t)it->second.ctxt_hndl << 32) | cur_ctxt_hndl;
+
+            heap_overflow.push_back(concat_contexts);
         }
     }
 }
@@ -349,6 +375,8 @@ ClientExit(void)
 
     dr_fprintf(gTraceFile,
                "=====================================================================\n");
+
+    DRCCTLIB_PRINTF("ClientExit heap_overflow size %d", heap_overflow.size());
 
     int count = 0;
     for (uint i = 0; i < heap_overflow.size(); i++) {
