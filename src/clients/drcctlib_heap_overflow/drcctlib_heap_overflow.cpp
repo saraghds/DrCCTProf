@@ -92,25 +92,6 @@ module_load_event(void *drcontext, const module_data_t *mod, bool loaded)
     app_pc towrap_malloc = (app_pc)dr_get_proc_address(mod->handle, MALLOC_ROUTINE_NAME);
     if (towrap_malloc != NULL) {
         drwrap_wrap(towrap_malloc, pre_malloc, post_malloc);
-        // #ifdef SHOW_RESULTS
-        //         bool ok =
-        // #endif
-        //             drwrap_wrap(towrap, wrap_pre, wrap_post);
-        // #ifdef SHOW_RESULTS
-        //         if (ok) {
-        //             dr_fprintf(STDERR, "<wrapped " MALLOC_ROUTINE_NAME " @" PFX "\n",
-        //             towrap);
-        //         } else {
-        //             /* We expect this w/ forwarded exports (e.g., on win7 both
-        //              * kernel32!HeapAlloc and kernelbase!HeapAlloc forward to
-        //              * the same routine in ntdll.dll)
-        //              */
-        //             dr_fprintf(STDERR,
-        //                        "<FAILED to wrap " MALLOC_ROUTINE_NAME " @" PFX
-        //                        ": already wrapped?\n",
-        //                        towrap);
-        //         }
-        // #endif
     }
 
     app_pc towrap_free = (app_pc)dr_get_proc_address(mod->handle, FREE_ROUTINE_NAME);
@@ -124,13 +105,6 @@ pre_malloc(void *wrapcxt, OUT void **user_data)
 {
     /* malloc(size) or HeapAlloc(heap, flags, size) */
     size_t sz = (size_t)drwrap_get_arg(wrapcxt, IF_WINDOWS_ELSE(2, 0));
-    // /* find the maximum malloc request */
-    // if (sz > max_malloc) {
-    //     dr_mutex_lock(max_lock);
-    //     if (sz > max_malloc)
-    //         max_malloc = sz;
-    //     dr_mutex_unlock(max_lock);
-    // }
     *user_data = (void *)sz;
     original_allocation_size = sz;
     drwrap_set_arg(wrapcxt, 1, (void *)(sz + 1));
@@ -151,19 +125,6 @@ post_malloc(void *wrapcxt, void *user_data)
     rm.ctxt_hndl = cur_ctxt_hndl;
     rm.malloc_addr = malloc_addr;
     redmap.insert(std::pair<app_pc, red_map_item>(red_zone_addr, rm));
-    // redmap[red_zone_addr] = cur_ctxt_hndl;
-
-    // #ifdef SHOW_RESULTS /* we want determinism in our test suite */
-    //     size_t sz = (size_t)user_data;
-    //     /* test out-of-memory by having a random moderately-large alloc fail */
-    //     if (sz > 1024 && dr_get_random_value(1000) < 10) {
-    //         bool ok = drwrap_set_retval(wrapcxt, NULL);
-    //         DR_ASSERT(ok);
-    //         dr_mutex_lock(max_lock);
-    //         malloc_oom++;
-    //         dr_mutex_unlock(max_lock);
-    //     }
-    // #endif
 }
 
 static void
