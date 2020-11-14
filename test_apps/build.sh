@@ -24,4 +24,6 @@ g++ -g ${SRC}/test_app_p0_512.cpp -o ${BUILD}/test_app_p0_512
 g++ -O0 -g ${SRC}/test1-memory.cpp -o ${BUILD}/test1-memory
 g++ -O0 -g ${SRC}/test2-register.cpp -o ${BUILD}/test2-register
 g++ -O0 -g ${SRC}/test-sample.cpp -o ${BUILD}/test-sample
+g++ -O0 -g ${SRC}/test1.cpp -o ${BUILD}/test1
+g++ -O0 -g ${SRC}/test2.cpp -o ${BUILD}/test2
 echo -e "\033[32m Build test apps successfully! \033[0m"
