@@ -78,6 +78,15 @@ std::vector<int64_t> heap_overflow;
 static file_t gTraceFile;
 
 static void
+pre_malloc(void *wrapcxt, OUT void **user_data);
+static void
+post_malloc(void *wrapcxt, void *user_data);
+static void
+pre_free(void *wrapcxt, OUT void **user_data);
+static void
+post_free(void *wrapcxt, void *user_data);
+
+static void
 module_load_event(void *drcontext, const module_data_t *mod, bool loaded)
 {
     app_pc towrap_malloc = (app_pc)dr_get_proc_address(mod->handle, MALLOC_ROUTINE_NAME);
